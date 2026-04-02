@@ -10,39 +10,40 @@ const supabase = createClient(
 export default function ImpulseInterruptor() {
   const [itemName, setItemName] = useState("");
   const [amount, setAmount] = useState("");
+  const [hasMovedMoney, setHasMovedMoney] = useState(false);
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // 1. Fetch existing stashes on load
-  useEffect(() => {
-    fetchStashes();
-  }, []);
+  useEffect(() => { fetchInterruptions(); }, []);
 
-  const fetchStashes = async () => {
-    const { data, error } = await supabase
+  const fetchInterruptions = async () => {
+    const { data } = await supabase
       .from('stashes')
       .select('*')
       .order('created_at', { ascending: false });
     if (data) setHistory(data);
   };
 
-  // 2. The "Interrupt" Function
   const handleInterrupt = async (e) => {
     e.preventDefault();
-    if (!amount || !itemName) return alert("Fill in both fields to interrupt the impulse!");
+    if (!hasMovedMoney) return alert("Please move the money in your bank app first to 'Verify' the interruption!");
 
     setLoading(true);
     const { error } = await supabase
       .from('stashes')
-      .insert([{ item_name: itemName, amount: parseFloat(amount) }]);
+      .insert([{ 
+        item_name: itemName, 
+        amount: parseFloat(amount), 
+        verified: true 
+      }]);
 
     if (!error) {
-      setItemName("");
-      setAmount("");
-      fetchStashes(); // Refresh the list
+      setItemName(""); 
+      setAmount(""); 
+      setHasMovedMoney(false);
+      fetchInterruptions();
     } else {
-      console.error(error);
-      alert("Error saving. Check your Supabase table columns!");
+      alert("Error: Make sure your Supabase table has 'item_name' and 'amount' columns!");
     }
     setLoading(false);
   };
@@ -50,54 +51,87 @@ export default function ImpulseInterruptor() {
   const totalSaved = history.reduce((acc, curr) => acc + curr.amount, 0);
 
   return (
-    <div style={{ maxWidth: '600px', margin: '40px auto', padding: '20px', fontFamily: 'sans-serif' }}>
+    <div style={{ maxWidth: '500px', margin: '40px auto', padding: '20px', fontFamily: 'sans-serif' }}>
       
-      {/* Top Stat Card */}
-      <div style={{ backgroundColor: '#10b981', color: 'white', padding: '40px', borderRadius: '24px', textAlign: 'center', marginBottom: '30px' }}>
-        <p style={{ margin: 0, opacity: 0.9, fontSize: '14px', fontWeight: 'bold', textTransform: 'uppercase' }}>Total Impulse Savings</p>
-        <h2 style={{ fontSize: '48px', margin: '10px 0' }}>${totalSaved.toFixed(2)}</h2>
+      {/* Visual Win Header */}
+      <div style={{ backgroundColor: '#0f172a', color: 'white', padding: '30px', borderRadius: '28px', textAlign: 'center', marginBottom: '30px' }}>
+        <p style={{ margin: 0, opacity: 0.6, fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px' }}>
+          Total Interrupted
+        </p>
+        <h2 style={{ fontSize: '42px', margin: '10px 0', color: '#10b981' }}>${totalSaved.toFixed(2)}</h2>
       </div>
 
-      {/* The Input Form */}
-      <div style={{ backgroundColor: '#f8fafc', padding: '30px', borderRadius: '24px', border: '1px solid #e2e8f0' }}>
-        <h3 style={{ marginTop: 0, color: '#1e293b' }}>Interrupt an Impulse</h3>
-        <form onSubmit={handleInterrupt}>
+      {/* The Interruptor Form */}
+      <div style={{ backgroundColor: '#ffffff', padding: '25px', borderRadius: '28px', border: '2px solid #e2e8f0' }}>
+        <h3 style={{ marginTop: 0, fontSize: '20px', color: '#1e293b' }}>New Interruption</h3>
+        
+        <form onSubmit={handleInterrupt} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <input 
-            placeholder="What was the item?" 
+            placeholder="What item are we interrupting?" 
             value={itemName}
             onChange={(e) => setItemName(e.target.value)}
-            style={{ width: '100%', padding: '15px', marginBottom: '15px', borderRadius: '12px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }}
+            style={{ padding: '16px', borderRadius: '14px', border: '1px solid #cbd5e1', fontSize: '16px' }}
           />
           <input 
             type="number" 
-            placeholder="How much was it? ($)" 
+            placeholder="Amount ($)" 
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            style={{ width: '100%', padding: '15px', marginBottom: '20px', borderRadius: '12px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }}
+            style={{ padding: '16px', borderRadius: '14px', border: '1px solid #cbd5e1', fontSize: '16px' }}
           />
+
+          {/* The Manual Action Lock */}
+          <div 
+            onClick={() => setHasMovedMoney(!hasMovedMoney)}
+            style={{ 
+              padding: '20px', 
+              borderRadius: '14px', 
+              backgroundColor: hasMovedMoney ? '#ecfdf5' : '#fff1f2',
+              border: '2px dashed',
+              borderColor: hasMovedMoney ? '#10b981' : '#f43f5e',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              transition: '0.2s'
+            }}
+          >
+            <input type="checkbox" checked={hasMovedMoney} readOnly style={{ transform: 'scale(1.5)' }} />
+            <span style={{ fontSize: '14px', fontWeight: '700', color: '#1e293b', lineHeight: '1.2' }}>
+              I have manually moved this money into my "Container" in my bank app.
+            </span>
+          </div>
+
           <button 
             type="submit" 
-            disabled={loading}
-            style={{ width: '100%', padding: '18px', backgroundColor: '#0f172a', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}
+            disabled={!hasMovedMoney || loading}
+            style={{ 
+              padding: '20px', 
+              backgroundColor: hasMovedMoney ? '#10b981' : '#94a3b8', 
+              color: 'white', 
+              borderRadius: '14px', 
+              fontWeight: '900', 
+              fontSize: '18px',
+              border: 'none',
+              cursor: hasMovedMoney ? 'pointer' : 'not-allowed',
+              marginTop: '10px'
+            }}
           >
-            {loading ? "SAVING..." : "INTERRUPT & STASH"}
+            {loading ? "VERIFYING..." : "CONFIRM INTERRUPTION"}
           </button>
         </form>
       </div>
 
-      {/* Recent History List */}
+      {/* History */}
       <div style={{ marginTop: '40px' }}>
-        <h4 style={{ color: '#64748b', textTransform: 'uppercase', fontSize: '12px' }}>Recent Wins</h4>
-        {history.map((item) => (
+        <h4 style={{ color: '#94a3b8', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>Successful Interruptions</h4>
+        {history.map(item => (
           <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '15px 0', borderBottom: '1px solid #f1f5f9' }}>
-            <span style={{ color: '#1e293b', fontWeight: '500' }}>{item.item_name}</span>
-            <span style={{ color: '#10b981', fontWeight: 'bold' }}>+${item.amount.toFixed(2)}</span>
+            <span style={{ color: '#1e293b' }}>{item.item_name}</span>
+            <span style={{ color: '#10b981', fontWeight: 'bold' }}>+${item.amount.toFixed(2)} ✅</span>
           </div>
         ))}
       </div>
-    </div>
-  );
-}
     </div>
   );
 }
