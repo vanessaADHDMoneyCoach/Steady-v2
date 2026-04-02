@@ -6,52 +6,45 @@ export default function Home() {
       {/* Navigation */}
       <nav style={{ padding: '20px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f1f5f9' }}>
         <span style={{ fontSize: '24px', fontWeight: '900', letterSpacing: '-1px', color: '#0f172a' }}>STEADY</span>
-        <a href="/dashboard" style={{ textDecoration: 'none', color: '#10b981', fontWeight: 'bold' }}>Launch App</a>
+        <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+          <a href="/dashboard" style={{ textDecoration: 'none', color: '#10b981', fontWeight: 'bold' }}>Launch App</a>
+        </div>
       </nav>
 
       {/* Hero Section */}
       <header style={{ padding: '80px 20px', textAlign: 'center', maxWidth: '900px', margin: '0 auto' }}>
-        <h1 style={{ fontSize: '56px', fontWeight: '900', letterSpacing: '-2px', marginBottom: '20px', color: '#0f172a' }}>
-          Total Control for the <span style={{ color: '#10b981' }}>Impulsive Brain.</span>
+        <h1 style={{ fontSize: '56px', fontWeight: '900', letterSpacing: '-2px', marginBottom: '20px', color: '#0f172a', lineHeight: '1.1' }}>
+          The Clarity of Monarch.<br />
+          The Discipline of YNAB.<br />
+          <span style={{ color: '#10b981' }}>Built for the ADHD Brain.</span>
         </h1>
         <p style={{ fontSize: '22px', color: '#64748b', marginBottom: '40px', maxWidth: '700px', margin: '0 auto 40px' }}>
-          The envelope method of YNAB meets the intelligence of Monarch. 
-          Built with a built-in "Circuit Breaker" for impulse spending.
+          Stop fighting your dopamine. Steady combines zero-based budgeting with a real-time "Impulse Interrupter" to help you keep what you earn.
         </p>
         <div style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
           <a href="/dashboard" style={{ padding: '18px 36px', backgroundColor: '#0f172a', color: 'white', borderRadius: '12px', textDecoration: 'none', fontWeight: 'bold', fontSize: '18px' }}>
-            Start Your Budget
+            Start Budgeting
           </a>
-          <button style={{ padding: '18px 36px', backgroundColor: 'white', border: '2px solid #e2e8f0', borderRadius: '12px', fontWeight: 'bold', fontSize: '18px' }}>
-            See How it Works
-          </button>
         </div>
       </header>
 
-      {/* Feature Grid */}
+      {/* Feature Section */}
       <section style={{ padding: '60px 20px', backgroundColor: '#f8fafc' }}>
-        <div style={{ maxWidth: '1000px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '30px' }}>
-          
-          <div style={{ padding: '30px', backgroundColor: 'white', borderRadius: '20px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
-            <h3 style={{ fontSize: '20px', marginBottom: '10px' }}>Proactive Budgeting</h3>
-            <p style={{ color: '#64748b' }}>Give every dollar a job before you spend it. Zero-based budgeting that actually sticks.</p>
+        <div style={{ maxWidth: '1000px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '40px' }}>
+          <div style={{ padding: '30px', backgroundColor: 'white', borderRadius: '24px', border: '1px solid #e2e8f0' }}>
+            <h3 style={{ fontSize: '22px', fontWeight: '700', marginBottom: '12px' }}>Zero-Based Logic</h3>
+            <p style={{ color: '#64748b' }}>Every dollar gets a job. No more "where did my money go?" mystery at the end of the month.</p>
           </div>
-
-          <div style={{ padding: '30px', backgroundColor: 'white', borderRadius: '20px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
-            <h3 style={{ fontSize: '20px', marginBottom: '10px' }}>Wealth Overview</h3>
-            <p style={{ color: '#64748b' }}>Beautiful visualization of your net worth, recurring bills, and cash flow in one place.</p>
+          <div style={{ padding: '30px', backgroundColor: 'white', borderRadius: '24px', border: '1px solid #e2e8f0' }}>
+            <h3 style={{ fontSize: '22px', fontWeight: '700', marginBottom: '12px' }}>Visual Wealth Map</h3>
+            <p style={{ color: '#64748b' }}>See your net worth and cash flow in a clean, Monarch-inspired interface that doesn't overwhelm.</p>
           </div>
-
-          <div style={{ padding: '30px', backgroundColor: '#10b981', color: 'white', borderRadius: '20px', boxShadow: '0 10px 15px -3px rgba(16, 185, 129, 0.3)' }}>
-            <h3 style={{ fontSize: '20px', marginBottom: '10px' }}>Impulse Interrupter</h3>
-            <p style={{ color: '#ecfdf5' }}>The "Wait" button for your wallet. Log the urge, save the money, and break the cycle.</p>
+          <div style={{ padding: '30px', backgroundColor: '#10b981', color: 'white', borderRadius: '24px' }}>
+            <h3 style={{ fontSize: '22px', fontWeight: '700', marginBottom: '12px' }}>The Impulse Interrupter</h3>
+            <p style={{ color: '#ecfdf5' }}>The specialized tool to catch impulse spend triggers before they hit your bank account.</p>
           </div>
-
         </div>
       </section>
-    </div>
-  );
-}
     </div>
   );
 }
