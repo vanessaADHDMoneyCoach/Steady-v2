@@ -29,10 +29,36 @@ export default function ImpulseInterruptor() {
   };
 
   const handleNotBuy = async () => {
-    const { error } = await supabase.from('stashes').insert([{ amount: parseFloat(amount) }]);
-    if (!error) {
-      setTotalSaved(prev => prev + parseFloat(amount));
-      setStep(8); // Success/Jar Screen
+    const numericAmount = parseFloat(amount);
+    
+    if (isNaN(numericAmount) || numericAmount <= 0) {
+      alert("Please enter a valid price first!");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // This line is the "Handshake" with your database
+      const { data, error } = await supabase
+        .from('stashes') // <--- TRIPLE CHECK: Is your table named exactly 'stashes'?
+        .insert([{ amount: numericAmount }])
+        .select();
+
+      if (error) {
+        // If Supabase rejects it, this will tell us why (e.g., "Table not found" or "RLS error")
+        console.error("Supabase Error Details:", error);
+        alert(`❌ DATABASE ERROR: ${error.message}\n\nHint: ${error.hint || 'Check your Table Name or RLS Policies.'}`);
+      } else {
+        // If it works, move to the Jar!
+        console.log("Success! Data saved:", data);
+        setTotalSaved(prev => prev + numericAmount);
+        setStep(8); 
+      }
+    } catch (err) {
+      alert("System Error: " + err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
