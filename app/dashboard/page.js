@@ -97,20 +97,20 @@ export default function ImpulseInterruptor() {
         </button>
       )}
 
-      {/* STEP 2: AMOUNT */}
       {step === 2 && (
-        <div className="card">
-          <h2>How much is it?</h2>
-          <input 
-            type="number" 
-            value={amount} 
-            onChange={(e) => setAmount(e.target.value)}
-            style={{ padding: '15px', fontSize: '24px', borderRadius: '10px', width: '80%', border: '2px solid #e2e8f0' }}
-          />
-          <button onClick={() => setStep(3)} style={btnStyle}>Next</button>
-        </div>
-      )}
-
+  <div style={{ position: 'relative', zIndex: 10 }}>
+    <h2 style={{ color: '#0f172a' }}>How much is it?</h2>
+    <input 
+      type="number" 
+      pattern="\d*"
+      placeholder="0.00"
+      value={amount} 
+      onChange={(e) => setAmount(e.target.value)}
+      style={{ padding: '15px', fontSize: '24px', borderRadius: '10px', width: '80%', border: '2px solid #e2e8f0', textAlign: 'center' }}
+    />
+    <button onClick={() => { console.log("Amount set to:", amount); setStep(3); }} style={btnStyle}>Next</button>
+  </div>
+)}
       {/* STEP 3: WHY */}
       {step === 3 && (
         <div>
@@ -143,28 +143,36 @@ export default function ImpulseInterruptor() {
 
    {/* STEP 6: BUY OR NOT BUY */}
 {step === 6 && (
-  <div>
+  <div style={{ position: 'relative', zIndex: 100 }}>
     <h2 style={{ marginBottom: '30px', color: '#0f172a' }}>The Moment of Truth</h2>
     
-    {/* Buy Button - Minimalist */}
     <button 
       onClick={() => setStep(7)} 
-      style={{ ...optionBtn, backgroundColor: '#f1f5f9', color: '#64748b', border: 'none' }}
+      style={{ ...optionBtn, backgroundColor: '#f1f5f9', color: '#64748b', border: 'none', cursor: 'pointer' }}
     >
       BUY IT
     </button>
     
-    {/* Not Buy Button - High Energy */}
     <button 
-      onClick={handleNotBuy} 
+      onClick={() => {
+        console.log("NOT BUY CLICKED!"); // This will show in your browser inspect console
+        handleNotBuy();
+      }} 
       style={{ 
-        ...optionBtn, 
+        display: 'block',
+        width: '100%',
+        padding: '25px',
+        marginTop: '20px',
         backgroundColor: '#10b981', 
         color: 'white', 
-        fontSize: '24px', 
-        boxShadow: '0 10px 0 #059669', // Gives it a 3D "Pressable" look
+        fontSize: '28px', 
+        fontWeight: '900',
+        borderRadius: '16px',
         border: 'none',
-        marginTop: '20px'
+        cursor: 'pointer',
+        boxShadow: '0 8px 0 #059669',
+        position: 'relative',
+        zIndex: 101
       }}
     >
       NOT BUY
