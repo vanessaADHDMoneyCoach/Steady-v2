@@ -8,130 +8,147 @@ const supabase = createClient(
 );
 
 export default function ImpulseInterruptor() {
-  const [itemName, setItemName] = useState("");
+  const [step, setStep] = useState(1);
   const [amount, setAmount] = useState("");
-  const [hasMovedMoney, setHasMovedMoney] = useState(false);
-  const [history, setHistory] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [reason, setReason] = useState("");
+  const [location, setLocation] = useState("");
+  const [goal, setGoal] = useState(100); // Default goal
+  const [totalSaved, setTotalSaved] = useState(0);
 
-  useEffect(() => { fetchInterruptions(); }, []);
+  // Load savings from Supabase on start
+  useEffect(() => {
+    fetchTotal();
+  }, []);
 
-  const fetchInterruptions = async () => {
-    const { data } = await supabase
-      .from('stashes')
-      .select('*')
-      .order('created_at', { ascending: false });
-    if (data) setHistory(data);
-  };
-
-  const handleInterrupt = async (e) => {
-    e.preventDefault();
-    if (!hasMovedMoney) return alert("Please move the money in your bank app first to 'Verify' the interruption!");
-
-    setLoading(true);
-    const { error } = await supabase
-      .from('stashes')
-      .insert([{ 
-        item_name: itemName, 
-        amount: parseFloat(amount), 
-        verified: true 
-      }]);
-
-    if (!error) {
-      setItemName(""); 
-      setAmount(""); 
-      setHasMovedMoney(false);
-      fetchInterruptions();
-    } else {
-      alert("Error: Make sure your Supabase table has 'item_name' and 'amount' columns!");
+  const fetchTotal = async () => {
+    const { data } = await supabase.from('stashes').select('amount');
+    if (data) {
+      const sum = data.reduce((acc, curr) => acc + curr.amount, 0);
+      setTotalSaved(sum);
     }
-    setLoading(false);
   };
 
-  const totalSaved = history.reduce((acc, curr) => acc + curr.amount, 0);
+  const handleNotBuy = async () => {
+    const { error } = await supabase.from('stashes').insert([{ amount: parseFloat(amount) }]);
+    if (!error) {
+      setTotalSaved(prev => prev + parseFloat(amount));
+      setStep(8); // Success/Jar Screen
+    }
+  };
+
+  const resetJar = async () => {
+    if (confirm("Are you sure you want to empty your progress?")) {
+      await supabase.from('stashes').delete().neq('amount', -1);
+      setTotalSaved(0);
+      setStep(1);
+    }
+  };
 
   return (
-    <div style={{ maxWidth: '500px', margin: '40px auto', padding: '20px', fontFamily: 'sans-serif' }}>
+    <div style={{ maxWidth: '450px', margin: '40px auto', padding: '20px', fontFamily: 'sans-serif', textAlign: 'center' }}>
       
-      {/* Visual Win Header */}
-      <div style={{ backgroundColor: '#0f172a', color: 'white', padding: '30px', borderRadius: '28px', textAlign: 'center', marginBottom: '30px' }}>
-        <p style={{ margin: 0, opacity: 0.6, fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px' }}>
-          Total Interrupted
-        </p>
-        <h2 style={{ fontSize: '42px', margin: '10px 0', color: '#10b981' }}>${totalSaved.toFixed(2)}</h2>
+      {/* Progress Toward Goal */}
+      <div style={{ marginBottom: '20px', backgroundColor: '#f1f5f9', padding: '15px', borderRadius: '15px' }}>
+        <p style={{ margin: 0, fontSize: '12px', fontWeight: 'bold', color: '#64748b' }}>SAVINGS GOAL: ${goal}</p>
+        <div style={{ width: '100%', height: '10px', backgroundColor: '#e2e8f0', borderRadius: '5px', marginTop: '10px' }}>
+          <div style={{ width: `${Math.min((totalSaved / goal) * 100, 100)}%`, height: '100%', backgroundColor: '#10b981', borderRadius: '5px', transition: 'width 0.5s' }} />
+        </div>
+        <input 
+          type="number" 
+          placeholder="Set Goal $" 
+          onChange={(e) => setGoal(e.target.value)}
+          style={{ marginTop: '10px', fontSize: '11px', border: 'none', background: 'transparent', textAlign: 'center', width: '80px' }}
+        />
       </div>
 
-      {/* The Interruptor Form */}
-      <div style={{ backgroundColor: '#ffffff', padding: '25px', borderRadius: '28px', border: '2px solid #e2e8f0' }}>
-        <h3 style={{ marginTop: 0, fontSize: '20px', color: '#1e293b' }}>New Interruption</h3>
-        
-        <form onSubmit={handleInterrupt} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          <input 
-            placeholder="What item are we interrupting?" 
-            value={itemName}
-            onChange={(e) => setItemName(e.target.value)}
-            style={{ padding: '16px', borderRadius: '14px', border: '1px solid #cbd5e1', fontSize: '16px' }}
-          />
+      {/* STEP 1: THE BIG RED BUTTON */}
+      {step === 1 && (
+        <button 
+          onClick={() => setStep(2)}
+          style={{ width: '250px', height: '250px', borderRadius: '50%', backgroundColor: '#ef4444', color: 'white', fontSize: '24px', fontWeight: '900', border: '10px solid #dc2626', cursor: 'pointer', boxShadow: '0 10px 0 #b91c1c' }}
+        >
+          DO I REALLY<br/>WANT THIS?
+        </button>
+      )}
+
+      {/* STEP 2: AMOUNT */}
+      {step === 2 && (
+        <div className="card">
+          <h2>How much is it?</h2>
           <input 
             type="number" 
-            placeholder="Amount ($)" 
-            value={amount}
+            value={amount} 
             onChange={(e) => setAmount(e.target.value)}
-            style={{ padding: '16px', borderRadius: '14px', border: '1px solid #cbd5e1', fontSize: '16px' }}
+            style={{ padding: '15px', fontSize: '24px', borderRadius: '10px', width: '80%', border: '2px solid #e2e8f0' }}
           />
+          <button onClick={() => setStep(3)} style={btnStyle}>Next</button>
+        </div>
+      )}
 
-          {/* The Manual Action Lock */}
-          <div 
-            onClick={() => setHasMovedMoney(!hasMovedMoney)}
-            style={{ 
-              padding: '20px', 
-              borderRadius: '14px', 
-              backgroundColor: hasMovedMoney ? '#ecfdf5' : '#fff1f2',
-              border: '2px dashed',
-              borderColor: hasMovedMoney ? '#10b981' : '#f43f5e',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              transition: '0.2s'
-            }}
-          >
-            <input type="checkbox" checked={hasMovedMoney} readOnly style={{ transform: 'scale(1.5)' }} />
-            <span style={{ fontSize: '14px', fontWeight: '700', color: '#1e293b', lineHeight: '1.2' }}>
-              I have manually moved this money into my "Container" in my bank app.
-            </span>
-          </div>
+      {/* STEP 3: WHY */}
+      {step === 3 && (
+        <div>
+          <h2>Why do I want this?</h2>
+          {['Bored', 'Stressed', 'Good Deal', 'Been Wanting it', 'Other'].map(opt => (
+            <button key={opt} onClick={() => {setReason(opt); setStep(4);}} style={optionBtn}>{opt}</button>
+          ))}
+        </div>
+      )}
 
-          <button 
-            type="submit" 
-            disabled={!hasMovedMoney || loading}
-            style={{ 
-              padding: '20px', 
-              backgroundColor: hasMovedMoney ? '#10b981' : '#94a3b8', 
-              color: 'white', 
-              borderRadius: '14px', 
-              fontWeight: '900', 
-              fontSize: '18px',
-              border: 'none',
-              cursor: hasMovedMoney ? 'pointer' : 'not-allowed',
-              marginTop: '10px'
-            }}
-          >
-            {loading ? "VERIFYING..." : "CONFIRM INTERRUPTION"}
-          </button>
-        </form>
-      </div>
+      {/* STEP 4: WHERE */}
+      {step === 4 && (
+        <div>
+          <h2>Where will I use this?</h2>
+          {['Home', 'Work', 'School', 'Special Occasion'].map(opt => (
+            <button key={opt} onClick={() => {setLocation(opt); setStep(6);}} style={optionBtn}>{opt}</button>
+          ))}
+          <button onClick={() => setStep(5)} style={optionBtn}>Not Sure</button>
+        </div>
+      )}
 
-      {/* History */}
-      <div style={{ marginTop: '40px' }}>
-        <h4 style={{ color: '#94a3b8', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>Successful Interruptions</h4>
-        {history.map(item => (
-          <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '15px 0', borderBottom: '1px solid #f1f5f9' }}>
-            <span style={{ color: '#1e293b' }}>{item.item_name}</span>
-            <span style={{ color: '#10b981', fontWeight: 'bold' }}>+${item.amount.toFixed(2)} ✅</span>
-          </div>
-        ))}
-      </div>
+      {/* STEP 5: NOT SURE WARNING */}
+      {step === 5 && (
+        <div style={{ backgroundColor: '#fff1f2', padding: '20px', borderRadius: '20px', border: '2px solid #fda4af' }}>
+          <h2 style={{ color: '#be123c' }}>Pause.</h2>
+          <p>If you aren't sure where you'll use it, now is <b>not</b> the time to buy.</p>
+          <button onClick={() => setStep(6)} style={btnStyle}>Next</button>
+        </div>
+      )}
+
+      {/* STEP 6: BUY OR NOT BUY */}
+      {step === 6 && (
+        <div>
+          <h2 style={{ marginBottom: '30px' }}>The Moment of Truth</h2>
+          <button onClick={() => setStep(7)} style={{ ...optionBtn, backgroundColor: '#f1f5f9', color: '#64748b' }}>BUY IT</button>
+          <button onClick={handleNotBuy} style={{ ...optionBtn, backgroundColor: '#10b981', color: 'white', fontSize: '24px' }}>NOT BUY</button>
+        </div>
+      )}
+
+      {/* STEP 7: INTENTIONALITY (BUY PATH) */}
+      {step === 7 && (
+        <div>
+          <h2 style={{ color: '#0f172a' }}>Be Intentional.</h2>
+          <p>If you buy this, make sure it serves your life. If not, you can always come back and hit the red button again.</p>
+          <button onClick={() => setStep(1)} style={btnStyle}>Reset</button>
+        </div>
+      )}
+
+      {/* STEP 8: SUCCESS JAR */}
+      {step === 8 && (
+        <div style={{ animation: 'bounce 0.5s infinite alternate' }}>
+          <div style={{ fontSize: '100px' }}>🫙</div>
+          <h2 style={{ color: '#10b981' }}>CLINK!</h2>
+          <p>You stashed ${amount} into your jar.</p>
+          <p style={{ fontWeight: 'bold', fontSize: '20px' }}>Total Saved: ${totalSaved.toFixed(2)}</p>
+          <button onClick={() => setStep(1)} style={btnStyle}>Interrupt Another</button>
+          <button onClick={resetJar} style={{ marginTop: '20px', background: 'none', border: 'none', color: '#94a3b8', fontSize: '10px', cursor: 'pointer' }}>Empty Jar</button>
+        </div>
+      )}
+
     </div>
   );
 }
+
+// Styling Objects
+const btnStyle = { marginTop: '20px', padding: '15px 30px', backgroundColor: '#0f172a', color: 'white', borderRadius: '12px', border: 'none', fontWeight: 'bold', cursor: 'pointer', width: '100%' };
+const optionBtn = { display: 'block', width: '100%', padding: '15px', marginBottom: '10px', borderRadius: '12px', border: '1px solid #e2e8f0', backgroundColor: 'white', fontWeight: 'bold', cursor: 'pointer' };
