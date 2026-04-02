@@ -2,7 +2,7 @@ import React from 'react';
 
 export default function Home() {
   // REPLACE THIS LINK with your actual Google Form URL
-  const googleFormUrl = "https://docs.google.com/forms/d/YOUR_FORM_ID_HERE/viewform";
+  const googleFormUrl = "https://forms.gle/rMgB2sJkJLguM68Y9";
 
   return (
     <div style={{ fontFamily: 'sans-serif', color: '#1e293b', lineHeight: '1.6', backgroundColor: '#ffffff' }}>
