@@ -141,14 +141,36 @@ export default function ImpulseInterruptor() {
         </div>
       )}
 
-      {/* STEP 6: BUY OR NOT BUY */}
-      {step === 6 && (
-        <div>
-          <h2 style={{ marginBottom: '30px' }}>The Moment of Truth</h2>
-          <button onClick={() => setStep(7)} style={{ ...optionBtn, backgroundColor: '#f1f5f9', color: '#64748b' }}>BUY IT</button>
-          <button onClick={handleNotBuy} style={{ ...optionBtn, backgroundColor: '#10b981', color: 'white', fontSize: '24px' }}>NOT BUY</button>
-        </div>
-      )}
+   {/* STEP 6: BUY OR NOT BUY */}
+{step === 6 && (
+  <div>
+    <h2 style={{ marginBottom: '30px', color: '#0f172a' }}>The Moment of Truth</h2>
+    
+    {/* Buy Button - Minimalist */}
+    <button 
+      onClick={() => setStep(7)} 
+      style={{ ...optionBtn, backgroundColor: '#f1f5f9', color: '#64748b', border: 'none' }}
+    >
+      BUY IT
+    </button>
+    
+    {/* Not Buy Button - High Energy */}
+    <button 
+      onClick={handleNotBuy} 
+      style={{ 
+        ...optionBtn, 
+        backgroundColor: '#10b981', 
+        color: 'white', 
+        fontSize: '24px', 
+        boxShadow: '0 10px 0 #059669', // Gives it a 3D "Pressable" look
+        border: 'none',
+        marginTop: '20px'
+      }}
+    >
+      NOT BUY
+    </button>
+  </div>
+)}
 
       {/* STEP 7: INTENTIONALITY (BUY PATH) */}
       {step === 7 && (
